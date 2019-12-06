@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 #
-# Copyright 2018 Google LLC
+# Copyright 2019 Google LLC
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -13,12 +13,13 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+
 """Unit tests."""
 
+import mock
 import pytest
 
 from google.cloud.bigquery import datatransfer_v1
-from google.cloud.bigquery.datatransfer_v1 import enums
 from google.cloud.bigquery.datatransfer_v1.proto import datatransfer_pb2
 from google.cloud.bigquery.datatransfer_v1.proto import transfer_pb2
 from google.protobuf import empty_pb2
@@ -26,9 +27,9 @@ from google.protobuf import field_mask_pb2
 from google.protobuf import timestamp_pb2
 
 
+
 class MultiCallableStub(object):
     """Stub for the grpc.UnaryUnaryMultiCallable interface."""
-
     def __init__(self, method, channel_stub):
         self.method = method
         self.channel_stub = channel_stub
@@ -49,15 +50,12 @@ class MultiCallableStub(object):
 
 class ChannelStub(object):
     """Stub for the grpc.Channel interface."""
-
-    def __init__(self, responses=[]):
+    def __init__(self, responses = []):
         self.responses = responses
         self.requests = []
 
-    def unary_unary(self,
-                    method,
-                    request_serializer=None,
-                    response_deserializer=None):
+    def unary_unary(
+            self, method, request_serializer=None, response_deserializer=None):
         return MultiCallableStub(method, self)
 
 
@@ -66,6 +64,7 @@ class CustomException(Exception):
 
 
 class TestDataTransferServiceClient(object):
+
     def test_get_data_source(self):
         # Setup Expected Response
         name_2 = 'name2-1052831874'
@@ -82,32 +81,18 @@ class TestDataTransferServiceClient(object):
         manual_runs_disabled = True
         partner_legal_name = 'partnerLegalName-1307326424'
         redirect_url = 'redirectUrl951230092'
-        expected_response = {
-            'name': name_2,
-            'data_source_id': data_source_id,
-            'display_name': display_name,
-            'description': description,
-            'client_id': client_id,
-            'supports_multiple_transfers': supports_multiple_transfers,
-            'update_deadline_seconds': update_deadline_seconds,
-            'default_schedule': default_schedule,
-            'supports_custom_schedule': supports_custom_schedule,
-            'help_url': help_url,
-            'default_data_refresh_window_days':
-            default_data_refresh_window_days,
-            'manual_runs_disabled': manual_runs_disabled,
-            'partner_legal_name': partner_legal_name,
-            'redirect_url': redirect_url
-        }
+        expected_response = {'name': name_2, 'data_source_id': data_source_id, 'display_name': display_name, 'description': description, 'client_id': client_id, 'supports_multiple_transfers': supports_multiple_transfers, 'update_deadline_seconds': update_deadline_seconds, 'default_schedule': default_schedule, 'supports_custom_schedule': supports_custom_schedule, 'help_url': help_url, 'default_data_refresh_window_days': default_data_refresh_window_days, 'manual_runs_disabled': manual_runs_disabled, 'partner_legal_name': partner_legal_name, 'redirect_url': redirect_url}
         expected_response = datatransfer_pb2.DataSource(**expected_response)
 
         # Mock the API response
-        channel = ChannelStub(responses=[expected_response])
-        client = datatransfer_v1.DataTransferServiceClient(channel=channel)
+        channel = ChannelStub(responses = [expected_response])
+        patch = mock.patch('google.api_core.grpc_helpers.create_channel')
+        with patch as create_channel:
+            create_channel.return_value = channel
+            client = datatransfer_v1.DataTransferServiceClient()
 
         # Setup Request
-        name = client.data_source_path('[PROJECT]', '[LOCATION]',
-                                       '[DATA_SOURCE]')
+        name = client.data_source_path('[PROJECT]', '[LOCATION]', '[DATA_SOURCE]')
 
         response = client.get_data_source(name)
         assert expected_response == response
@@ -119,12 +104,14 @@ class TestDataTransferServiceClient(object):
 
     def test_get_data_source_exception(self):
         # Mock the API response
-        channel = ChannelStub(responses=[CustomException()])
-        client = datatransfer_v1.DataTransferServiceClient(channel=channel)
+        channel = ChannelStub(responses = [CustomException()])
+        patch = mock.patch('google.api_core.grpc_helpers.create_channel')
+        with patch as create_channel:
+            create_channel.return_value = channel
+            client = datatransfer_v1.DataTransferServiceClient()
 
         # Setup request
-        name = client.data_source_path('[PROJECT]', '[LOCATION]',
-                                       '[DATA_SOURCE]')
+        name = client.data_source_path('[PROJECT]', '[LOCATION]', '[DATA_SOURCE]')
 
         with pytest.raises(CustomException):
             client.get_data_source(name)
@@ -134,16 +121,15 @@ class TestDataTransferServiceClient(object):
         next_page_token = ''
         data_sources_element = {}
         data_sources = [data_sources_element]
-        expected_response = {
-            'next_page_token': next_page_token,
-            'data_sources': data_sources
-        }
-        expected_response = datatransfer_pb2.ListDataSourcesResponse(
-            **expected_response)
+        expected_response = {'next_page_token': next_page_token, 'data_sources': data_sources}
+        expected_response = datatransfer_pb2.ListDataSourcesResponse(**expected_response)
 
         # Mock the API response
-        channel = ChannelStub(responses=[expected_response])
-        client = datatransfer_v1.DataTransferServiceClient(channel=channel)
+        channel = ChannelStub(responses = [expected_response])
+        patch = mock.patch('google.api_core.grpc_helpers.create_channel')
+        with patch as create_channel:
+            create_channel.return_value = channel
+            client = datatransfer_v1.DataTransferServiceClient()
 
         # Setup Request
         parent = client.location_path('[PROJECT]', '[LOCATION]')
@@ -155,14 +141,16 @@ class TestDataTransferServiceClient(object):
         assert expected_response.data_sources[0] == resources[0]
 
         assert len(channel.requests) == 1
-        expected_request = datatransfer_pb2.ListDataSourcesRequest(
-            parent=parent)
+        expected_request = datatransfer_pb2.ListDataSourcesRequest(parent=parent)
         actual_request = channel.requests[0][1]
         assert expected_request == actual_request
 
     def test_list_data_sources_exception(self):
-        channel = ChannelStub(responses=[CustomException()])
-        client = datatransfer_v1.DataTransferServiceClient(channel=channel)
+        channel = ChannelStub(responses = [CustomException()])
+        patch = mock.patch('google.api_core.grpc_helpers.create_channel')
+        with patch as create_channel:
+            create_channel.return_value = channel
+            client = datatransfer_v1.DataTransferServiceClient()
 
         # Setup request
         parent = client.location_path('[PROJECT]', '[LOCATION]')
@@ -182,55 +170,44 @@ class TestDataTransferServiceClient(object):
         disabled = True
         user_id = 147132913
         dataset_region = 'datasetRegion959248539'
+        notification_pubsub_topic = 'notificationPubsubTopic1794281191'
         partner_token = 'partnerToken725173186'
-        expected_response = {
-            'name': name,
-            'destination_dataset_id': destination_dataset_id,
-            'display_name': display_name,
-            'data_source_id': data_source_id,
-            'schedule': schedule,
-            'data_refresh_window_days': data_refresh_window_days,
-            'disabled': disabled,
-            'user_id': user_id,
-            'dataset_region': dataset_region,
-            'partner_token': partner_token
-        }
+        expected_response = {'name': name, 'destination_dataset_id': destination_dataset_id, 'display_name': display_name, 'data_source_id': data_source_id, 'schedule': schedule, 'data_refresh_window_days': data_refresh_window_days, 'disabled': disabled, 'user_id': user_id, 'dataset_region': dataset_region, 'notification_pubsub_topic': notification_pubsub_topic, 'partner_token': partner_token}
         expected_response = transfer_pb2.TransferConfig(**expected_response)
 
         # Mock the API response
-        channel = ChannelStub(responses=[expected_response])
-        client = datatransfer_v1.DataTransferServiceClient(channel=channel)
+        channel = ChannelStub(responses = [expected_response])
+        patch = mock.patch('google.api_core.grpc_helpers.create_channel')
+        with patch as create_channel:
+            create_channel.return_value = channel
+            client = datatransfer_v1.DataTransferServiceClient()
 
         # Setup Request
         parent = client.location_path('[PROJECT]', '[LOCATION]')
         transfer_config = {}
-        authorization_code = 'authorizationCode1571154419'
 
-        response = client.create_transfer_config(parent, transfer_config,
-                                                 authorization_code)
+        response = client.create_transfer_config(parent, transfer_config)
         assert expected_response == response
 
         assert len(channel.requests) == 1
-        expected_request = datatransfer_pb2.CreateTransferConfigRequest(
-            parent=parent,
-            transfer_config=transfer_config,
-            authorization_code=authorization_code)
+        expected_request = datatransfer_pb2.CreateTransferConfigRequest(parent=parent, transfer_config=transfer_config)
         actual_request = channel.requests[0][1]
         assert expected_request == actual_request
 
     def test_create_transfer_config_exception(self):
         # Mock the API response
-        channel = ChannelStub(responses=[CustomException()])
-        client = datatransfer_v1.DataTransferServiceClient(channel=channel)
+        channel = ChannelStub(responses = [CustomException()])
+        patch = mock.patch('google.api_core.grpc_helpers.create_channel')
+        with patch as create_channel:
+            create_channel.return_value = channel
+            client = datatransfer_v1.DataTransferServiceClient()
 
         # Setup request
         parent = client.location_path('[PROJECT]', '[LOCATION]')
         transfer_config = {}
-        authorization_code = 'authorizationCode1571154419'
 
         with pytest.raises(CustomException):
-            client.create_transfer_config(parent, transfer_config,
-                                          authorization_code)
+            client.create_transfer_config(parent, transfer_config)
 
     def test_update_transfer_config(self):
         # Setup Expected Response
@@ -243,46 +220,38 @@ class TestDataTransferServiceClient(object):
         disabled = True
         user_id = 147132913
         dataset_region = 'datasetRegion959248539'
+        notification_pubsub_topic = 'notificationPubsubTopic1794281191'
         partner_token = 'partnerToken725173186'
-        expected_response = {
-            'name': name,
-            'destination_dataset_id': destination_dataset_id,
-            'display_name': display_name,
-            'data_source_id': data_source_id,
-            'schedule': schedule,
-            'data_refresh_window_days': data_refresh_window_days,
-            'disabled': disabled,
-            'user_id': user_id,
-            'dataset_region': dataset_region,
-            'partner_token': partner_token
-        }
+        expected_response = {'name': name, 'destination_dataset_id': destination_dataset_id, 'display_name': display_name, 'data_source_id': data_source_id, 'schedule': schedule, 'data_refresh_window_days': data_refresh_window_days, 'disabled': disabled, 'user_id': user_id, 'dataset_region': dataset_region, 'notification_pubsub_topic': notification_pubsub_topic, 'partner_token': partner_token}
         expected_response = transfer_pb2.TransferConfig(**expected_response)
 
         # Mock the API response
-        channel = ChannelStub(responses=[expected_response])
-        client = datatransfer_v1.DataTransferServiceClient(channel=channel)
+        channel = ChannelStub(responses = [expected_response])
+        patch = mock.patch('google.api_core.grpc_helpers.create_channel')
+        with patch as create_channel:
+            create_channel.return_value = channel
+            client = datatransfer_v1.DataTransferServiceClient()
 
         # Setup Request
         transfer_config = {}
         authorization_code = 'authorizationCode1571154419'
         update_mask = {}
 
-        response = client.update_transfer_config(
-            transfer_config, authorization_code, update_mask)
+        response = client.update_transfer_config(transfer_config, authorization_code, update_mask)
         assert expected_response == response
 
         assert len(channel.requests) == 1
-        expected_request = datatransfer_pb2.UpdateTransferConfigRequest(
-            transfer_config=transfer_config,
-            authorization_code=authorization_code,
-            update_mask=update_mask)
+        expected_request = datatransfer_pb2.UpdateTransferConfigRequest(transfer_config=transfer_config, authorization_code=authorization_code, update_mask=update_mask)
         actual_request = channel.requests[0][1]
         assert expected_request == actual_request
 
     def test_update_transfer_config_exception(self):
         # Mock the API response
-        channel = ChannelStub(responses=[CustomException()])
-        client = datatransfer_v1.DataTransferServiceClient(channel=channel)
+        channel = ChannelStub(responses = [CustomException()])
+        patch = mock.patch('google.api_core.grpc_helpers.create_channel')
+        with patch as create_channel:
+            create_channel.return_value = channel
+            client = datatransfer_v1.DataTransferServiceClient()
 
         # Setup request
         transfer_config = {}
@@ -290,33 +259,35 @@ class TestDataTransferServiceClient(object):
         update_mask = {}
 
         with pytest.raises(CustomException):
-            client.update_transfer_config(transfer_config, authorization_code,
-                                          update_mask)
+            client.update_transfer_config(transfer_config, authorization_code, update_mask)
 
     def test_delete_transfer_config(self):
         channel = ChannelStub()
-        client = datatransfer_v1.DataTransferServiceClient(channel=channel)
+        patch = mock.patch('google.api_core.grpc_helpers.create_channel')
+        with patch as create_channel:
+            create_channel.return_value = channel
+            client = datatransfer_v1.DataTransferServiceClient()
 
         # Setup Request
-        name = client.transfer_config_path('[PROJECT]', '[LOCATION]',
-                                           '[TRANSFER_CONFIG]')
+        name = client.transfer_config_path('[PROJECT]', '[LOCATION]', '[TRANSFER_CONFIG]')
 
         client.delete_transfer_config(name)
 
         assert len(channel.requests) == 1
-        expected_request = datatransfer_pb2.DeleteTransferConfigRequest(
-            name=name)
+        expected_request = datatransfer_pb2.DeleteTransferConfigRequest(name=name)
         actual_request = channel.requests[0][1]
         assert expected_request == actual_request
 
     def test_delete_transfer_config_exception(self):
         # Mock the API response
-        channel = ChannelStub(responses=[CustomException()])
-        client = datatransfer_v1.DataTransferServiceClient(channel=channel)
+        channel = ChannelStub(responses = [CustomException()])
+        patch = mock.patch('google.api_core.grpc_helpers.create_channel')
+        with patch as create_channel:
+            create_channel.return_value = channel
+            client = datatransfer_v1.DataTransferServiceClient()
 
         # Setup request
-        name = client.transfer_config_path('[PROJECT]', '[LOCATION]',
-                                           '[TRANSFER_CONFIG]')
+        name = client.transfer_config_path('[PROJECT]', '[LOCATION]', '[TRANSFER_CONFIG]')
 
         with pytest.raises(CustomException):
             client.delete_transfer_config(name)
@@ -332,28 +303,20 @@ class TestDataTransferServiceClient(object):
         disabled = True
         user_id = 147132913
         dataset_region = 'datasetRegion959248539'
+        notification_pubsub_topic = 'notificationPubsubTopic1794281191'
         partner_token = 'partnerToken725173186'
-        expected_response = {
-            'name': name_2,
-            'destination_dataset_id': destination_dataset_id,
-            'display_name': display_name,
-            'data_source_id': data_source_id,
-            'schedule': schedule,
-            'data_refresh_window_days': data_refresh_window_days,
-            'disabled': disabled,
-            'user_id': user_id,
-            'dataset_region': dataset_region,
-            'partner_token': partner_token
-        }
+        expected_response = {'name': name_2, 'destination_dataset_id': destination_dataset_id, 'display_name': display_name, 'data_source_id': data_source_id, 'schedule': schedule, 'data_refresh_window_days': data_refresh_window_days, 'disabled': disabled, 'user_id': user_id, 'dataset_region': dataset_region, 'notification_pubsub_topic': notification_pubsub_topic, 'partner_token': partner_token}
         expected_response = transfer_pb2.TransferConfig(**expected_response)
 
         # Mock the API response
-        channel = ChannelStub(responses=[expected_response])
-        client = datatransfer_v1.DataTransferServiceClient(channel=channel)
+        channel = ChannelStub(responses = [expected_response])
+        patch = mock.patch('google.api_core.grpc_helpers.create_channel')
+        with patch as create_channel:
+            create_channel.return_value = channel
+            client = datatransfer_v1.DataTransferServiceClient()
 
         # Setup Request
-        name = client.transfer_config_path('[PROJECT]', '[LOCATION]',
-                                           '[TRANSFER_CONFIG]')
+        name = client.transfer_config_path('[PROJECT]', '[LOCATION]', '[TRANSFER_CONFIG]')
 
         response = client.get_transfer_config(name)
         assert expected_response == response
@@ -365,12 +328,14 @@ class TestDataTransferServiceClient(object):
 
     def test_get_transfer_config_exception(self):
         # Mock the API response
-        channel = ChannelStub(responses=[CustomException()])
-        client = datatransfer_v1.DataTransferServiceClient(channel=channel)
+        channel = ChannelStub(responses = [CustomException()])
+        patch = mock.patch('google.api_core.grpc_helpers.create_channel')
+        with patch as create_channel:
+            create_channel.return_value = channel
+            client = datatransfer_v1.DataTransferServiceClient()
 
         # Setup request
-        name = client.transfer_config_path('[PROJECT]', '[LOCATION]',
-                                           '[TRANSFER_CONFIG]')
+        name = client.transfer_config_path('[PROJECT]', '[LOCATION]', '[TRANSFER_CONFIG]')
 
         with pytest.raises(CustomException):
             client.get_transfer_config(name)
@@ -380,91 +345,125 @@ class TestDataTransferServiceClient(object):
         next_page_token = ''
         transfer_configs_element = {}
         transfer_configs = [transfer_configs_element]
-        expected_response = {
-            'next_page_token': next_page_token,
-            'transfer_configs': transfer_configs
-        }
-        expected_response = datatransfer_pb2.ListTransferConfigsResponse(
-            **expected_response)
+        expected_response = {'next_page_token': next_page_token, 'transfer_configs': transfer_configs}
+        expected_response = datatransfer_pb2.ListTransferConfigsResponse(**expected_response)
 
         # Mock the API response
-        channel = ChannelStub(responses=[expected_response])
-        client = datatransfer_v1.DataTransferServiceClient(channel=channel)
+        channel = ChannelStub(responses = [expected_response])
+        patch = mock.patch('google.api_core.grpc_helpers.create_channel')
+        with patch as create_channel:
+            create_channel.return_value = channel
+            client = datatransfer_v1.DataTransferServiceClient()
 
         # Setup Request
         parent = client.location_path('[PROJECT]', '[LOCATION]')
         data_source_ids = []
 
-        paged_list_response = client.list_transfer_configs(
-            parent, data_source_ids)
+        paged_list_response = client.list_transfer_configs(parent, data_source_ids)
         resources = list(paged_list_response)
         assert len(resources) == 1
 
         assert expected_response.transfer_configs[0] == resources[0]
 
         assert len(channel.requests) == 1
-        expected_request = datatransfer_pb2.ListTransferConfigsRequest(
-            parent=parent, data_source_ids=data_source_ids)
+        expected_request = datatransfer_pb2.ListTransferConfigsRequest(parent=parent, data_source_ids=data_source_ids)
         actual_request = channel.requests[0][1]
         assert expected_request == actual_request
 
     def test_list_transfer_configs_exception(self):
-        channel = ChannelStub(responses=[CustomException()])
-        client = datatransfer_v1.DataTransferServiceClient(channel=channel)
+        channel = ChannelStub(responses = [CustomException()])
+        patch = mock.patch('google.api_core.grpc_helpers.create_channel')
+        with patch as create_channel:
+            create_channel.return_value = channel
+            client = datatransfer_v1.DataTransferServiceClient()
 
         # Setup request
         parent = client.location_path('[PROJECT]', '[LOCATION]')
         data_source_ids = []
 
-        paged_list_response = client.list_transfer_configs(
-            parent, data_source_ids)
+        paged_list_response = client.list_transfer_configs(parent, data_source_ids)
         with pytest.raises(CustomException):
             list(paged_list_response)
 
     def test_schedule_transfer_runs(self):
         # Setup Expected Response
         expected_response = {}
-        expected_response = datatransfer_pb2.ScheduleTransferRunsResponse(
-            **expected_response)
+        expected_response = datatransfer_pb2.ScheduleTransferRunsResponse(**expected_response)
 
         # Mock the API response
-        channel = ChannelStub(responses=[expected_response])
-        client = datatransfer_v1.DataTransferServiceClient(channel=channel)
+        channel = ChannelStub(responses = [expected_response])
+        patch = mock.patch('google.api_core.grpc_helpers.create_channel')
+        with patch as create_channel:
+            create_channel.return_value = channel
+            client = datatransfer_v1.DataTransferServiceClient()
 
         # Setup Request
-        parent = client.transfer_config_path('[PROJECT]', '[LOCATION]',
-                                             '[TRANSFER_CONFIG]')
+        parent = client.transfer_config_path('[PROJECT]', '[LOCATION]', '[TRANSFER_CONFIG]')
         labels = {}
         start_time = {}
         end_time = {}
 
-        response = client.schedule_transfer_runs(parent, labels, start_time,
-                                                 end_time)
+        response = client.schedule_transfer_runs(parent, labels, start_time, end_time)
         assert expected_response == response
 
         assert len(channel.requests) == 1
-        expected_request = datatransfer_pb2.ScheduleTransferRunsRequest(
-            parent=parent,
-            labels=labels,
-            start_time=start_time,
-            end_time=end_time)
+        expected_request = datatransfer_pb2.ScheduleTransferRunsRequest(parent=parent, labels=labels, start_time=start_time, end_time=end_time)
         actual_request = channel.requests[0][1]
         assert expected_request == actual_request
 
     def test_schedule_transfer_runs_exception(self):
         # Mock the API response
-        channel = ChannelStub(responses=[CustomException()])
-        client = datatransfer_v1.DataTransferServiceClient(channel=channel)
+        channel = ChannelStub(responses = [CustomException()])
+        patch = mock.patch('google.api_core.grpc_helpers.create_channel')
+        with patch as create_channel:
+            create_channel.return_value = channel
+            client = datatransfer_v1.DataTransferServiceClient()
 
         # Setup request
-        parent = client.transfer_config_path('[PROJECT]', '[LOCATION]',
-                                             '[TRANSFER_CONFIG]')
+        parent = client.transfer_config_path('[PROJECT]', '[LOCATION]', '[TRANSFER_CONFIG]')
         labels = {}
         start_time = {}
         end_time = {}
 
         with pytest.raises(CustomException):
             client.schedule_transfer_runs(parent, labels, start_time, end_time)
+
+    def test_start_manual_transfer_runs(self):
+        # Setup Expected Response
+        expected_response = {}
+        expected_response = datatransfer_pb2.StartManualTransferRunsResponse(**expected_response)
+
+        # Mock the API response
+        channel = ChannelStub(responses = [expected_response])
+        patch = mock.patch('google.api_core.grpc_helpers.create_channel')
+        with patch as create_channel:
+            create_channel.return_value = channel
+            client = datatransfer_v1.DataTransferServiceClient()
+
+        # Setup Request
+        parent = client.transfer_config_path('[PROJECT]', '[LOCATION]', '[TRANSFER_CONFIG]')
+
+        response = client.start_manual_transfer_runs(parent)
+        assert expected_response == response
+
+        assert len(channel.requests) == 1
+        expected_request = datatransfer_pb2.StartManualTransferRunsRequest(parent=parent)
+        actual_request = channel.requests[0][1]
+        assert expected_request == actual_request
+
+    def test_start_manual_transfer_runs_exception(self):
+        # Mock the API response
+        channel = ChannelStub(responses = [CustomException()])
+        patch = mock.patch('google.api_core.grpc_helpers.create_channel')
+        with patch as create_channel:
+            create_channel.return_value = channel
+            client = datatransfer_v1.DataTransferServiceClient()
+
+        # Setup request
+        parent = client.transfer_config_path('[PROJECT]', '[LOCATION]', '[TRANSFER_CONFIG]')
+
+        with pytest.raises(CustomException):
+            client.start_manual_transfer_runs(parent)
 
     def test_get_transfer_run(self):
         # Setup Expected Response
@@ -473,24 +472,20 @@ class TestDataTransferServiceClient(object):
         data_source_id = 'dataSourceId-1015796374'
         user_id = 147132913
         schedule = 'schedule-697920873'
+        notification_pubsub_topic = 'notificationPubsubTopic1794281191'
         partner_token = 'partnerToken725173186'
-        expected_response = {
-            'name': name_2,
-            'destination_dataset_id': destination_dataset_id,
-            'data_source_id': data_source_id,
-            'user_id': user_id,
-            'schedule': schedule,
-            'partner_token': partner_token
-        }
+        expected_response = {'name': name_2, 'destination_dataset_id': destination_dataset_id, 'data_source_id': data_source_id, 'user_id': user_id, 'schedule': schedule, 'notification_pubsub_topic': notification_pubsub_topic, 'partner_token': partner_token}
         expected_response = transfer_pb2.TransferRun(**expected_response)
 
         # Mock the API response
-        channel = ChannelStub(responses=[expected_response])
-        client = datatransfer_v1.DataTransferServiceClient(channel=channel)
+        channel = ChannelStub(responses = [expected_response])
+        patch = mock.patch('google.api_core.grpc_helpers.create_channel')
+        with patch as create_channel:
+            create_channel.return_value = channel
+            client = datatransfer_v1.DataTransferServiceClient()
 
         # Setup Request
-        name = client.run_path('[PROJECT]', '[LOCATION]', '[TRANSFER_CONFIG]',
-                               '[RUN]')
+        name = client.run_path('[PROJECT]', '[LOCATION]', '[TRANSFER_CONFIG]', '[RUN]')
 
         response = client.get_transfer_run(name)
         assert expected_response == response
@@ -502,23 +497,27 @@ class TestDataTransferServiceClient(object):
 
     def test_get_transfer_run_exception(self):
         # Mock the API response
-        channel = ChannelStub(responses=[CustomException()])
-        client = datatransfer_v1.DataTransferServiceClient(channel=channel)
+        channel = ChannelStub(responses = [CustomException()])
+        patch = mock.patch('google.api_core.grpc_helpers.create_channel')
+        with patch as create_channel:
+            create_channel.return_value = channel
+            client = datatransfer_v1.DataTransferServiceClient()
 
         # Setup request
-        name = client.run_path('[PROJECT]', '[LOCATION]', '[TRANSFER_CONFIG]',
-                               '[RUN]')
+        name = client.run_path('[PROJECT]', '[LOCATION]', '[TRANSFER_CONFIG]', '[RUN]')
 
         with pytest.raises(CustomException):
             client.get_transfer_run(name)
 
     def test_delete_transfer_run(self):
         channel = ChannelStub()
-        client = datatransfer_v1.DataTransferServiceClient(channel=channel)
+        patch = mock.patch('google.api_core.grpc_helpers.create_channel')
+        with patch as create_channel:
+            create_channel.return_value = channel
+            client = datatransfer_v1.DataTransferServiceClient()
 
         # Setup Request
-        name = client.run_path('[PROJECT]', '[LOCATION]', '[TRANSFER_CONFIG]',
-                               '[RUN]')
+        name = client.run_path('[PROJECT]', '[LOCATION]', '[TRANSFER_CONFIG]', '[RUN]')
 
         client.delete_transfer_run(name)
 
@@ -529,12 +528,14 @@ class TestDataTransferServiceClient(object):
 
     def test_delete_transfer_run_exception(self):
         # Mock the API response
-        channel = ChannelStub(responses=[CustomException()])
-        client = datatransfer_v1.DataTransferServiceClient(channel=channel)
+        channel = ChannelStub(responses = [CustomException()])
+        patch = mock.patch('google.api_core.grpc_helpers.create_channel')
+        with patch as create_channel:
+            create_channel.return_value = channel
+            client = datatransfer_v1.DataTransferServiceClient()
 
         # Setup request
-        name = client.run_path('[PROJECT]', '[LOCATION]', '[TRANSFER_CONFIG]',
-                               '[RUN]')
+        name = client.run_path('[PROJECT]', '[LOCATION]', '[TRANSFER_CONFIG]', '[RUN]')
 
         with pytest.raises(CustomException):
             client.delete_transfer_run(name)
@@ -544,48 +545,41 @@ class TestDataTransferServiceClient(object):
         next_page_token = ''
         transfer_runs_element = {}
         transfer_runs = [transfer_runs_element]
-        expected_response = {
-            'next_page_token': next_page_token,
-            'transfer_runs': transfer_runs
-        }
-        expected_response = datatransfer_pb2.ListTransferRunsResponse(
-            **expected_response)
+        expected_response = {'next_page_token': next_page_token, 'transfer_runs': transfer_runs}
+        expected_response = datatransfer_pb2.ListTransferRunsResponse(**expected_response)
 
         # Mock the API response
-        channel = ChannelStub(responses=[expected_response])
-        client = datatransfer_v1.DataTransferServiceClient(channel=channel)
+        channel = ChannelStub(responses = [expected_response])
+        patch = mock.patch('google.api_core.grpc_helpers.create_channel')
+        with patch as create_channel:
+            create_channel.return_value = channel
+            client = datatransfer_v1.DataTransferServiceClient()
 
         # Setup Request
-        parent = client.transfer_config_path('[PROJECT]', '[LOCATION]',
-                                             '[TRANSFER_CONFIG]')
-        states = []
-        run_attempt = enums.ListTransferRunsRequest.RunAttempt.RUN_ATTEMPT_UNSPECIFIED
+        parent = client.transfer_config_path('[PROJECT]', '[LOCATION]', '[TRANSFER_CONFIG]')
 
-        paged_list_response = client.list_transfer_runs(
-            parent, states, run_attempt)
+        paged_list_response = client.list_transfer_runs(parent)
         resources = list(paged_list_response)
         assert len(resources) == 1
 
         assert expected_response.transfer_runs[0] == resources[0]
 
         assert len(channel.requests) == 1
-        expected_request = datatransfer_pb2.ListTransferRunsRequest(
-            parent=parent, states=states, run_attempt=run_attempt)
+        expected_request = datatransfer_pb2.ListTransferRunsRequest(parent=parent)
         actual_request = channel.requests[0][1]
         assert expected_request == actual_request
 
     def test_list_transfer_runs_exception(self):
-        channel = ChannelStub(responses=[CustomException()])
-        client = datatransfer_v1.DataTransferServiceClient(channel=channel)
+        channel = ChannelStub(responses = [CustomException()])
+        patch = mock.patch('google.api_core.grpc_helpers.create_channel')
+        with patch as create_channel:
+            create_channel.return_value = channel
+            client = datatransfer_v1.DataTransferServiceClient()
 
         # Setup request
-        parent = client.transfer_config_path('[PROJECT]', '[LOCATION]',
-                                             '[TRANSFER_CONFIG]')
-        states = []
-        run_attempt = enums.ListTransferRunsRequest.RunAttempt.RUN_ATTEMPT_UNSPECIFIED
+        parent = client.transfer_config_path('[PROJECT]', '[LOCATION]', '[TRANSFER_CONFIG]')
 
-        paged_list_response = client.list_transfer_runs(
-            parent, states, run_attempt)
+        paged_list_response = client.list_transfer_runs(parent)
         with pytest.raises(CustomException):
             list(paged_list_response)
 
@@ -594,44 +588,41 @@ class TestDataTransferServiceClient(object):
         next_page_token = ''
         transfer_messages_element = {}
         transfer_messages = [transfer_messages_element]
-        expected_response = {
-            'next_page_token': next_page_token,
-            'transfer_messages': transfer_messages
-        }
-        expected_response = datatransfer_pb2.ListTransferLogsResponse(
-            **expected_response)
+        expected_response = {'next_page_token': next_page_token, 'transfer_messages': transfer_messages}
+        expected_response = datatransfer_pb2.ListTransferLogsResponse(**expected_response)
 
         # Mock the API response
-        channel = ChannelStub(responses=[expected_response])
-        client = datatransfer_v1.DataTransferServiceClient(channel=channel)
+        channel = ChannelStub(responses = [expected_response])
+        patch = mock.patch('google.api_core.grpc_helpers.create_channel')
+        with patch as create_channel:
+            create_channel.return_value = channel
+            client = datatransfer_v1.DataTransferServiceClient()
 
         # Setup Request
-        parent = client.run_path('[PROJECT]', '[LOCATION]',
-                                 '[TRANSFER_CONFIG]', '[RUN]')
-        message_types = []
+        parent = client.run_path('[PROJECT]', '[LOCATION]', '[TRANSFER_CONFIG]', '[RUN]')
 
-        paged_list_response = client.list_transfer_logs(parent, message_types)
+        paged_list_response = client.list_transfer_logs(parent)
         resources = list(paged_list_response)
         assert len(resources) == 1
 
         assert expected_response.transfer_messages[0] == resources[0]
 
         assert len(channel.requests) == 1
-        expected_request = datatransfer_pb2.ListTransferLogsRequest(
-            parent=parent, message_types=message_types)
+        expected_request = datatransfer_pb2.ListTransferLogsRequest(parent=parent)
         actual_request = channel.requests[0][1]
         assert expected_request == actual_request
 
     def test_list_transfer_logs_exception(self):
-        channel = ChannelStub(responses=[CustomException()])
-        client = datatransfer_v1.DataTransferServiceClient(channel=channel)
+        channel = ChannelStub(responses = [CustomException()])
+        patch = mock.patch('google.api_core.grpc_helpers.create_channel')
+        with patch as create_channel:
+            create_channel.return_value = channel
+            client = datatransfer_v1.DataTransferServiceClient()
 
         # Setup request
-        parent = client.run_path('[PROJECT]', '[LOCATION]',
-                                 '[TRANSFER_CONFIG]', '[RUN]')
-        message_types = []
+        parent = client.run_path('[PROJECT]', '[LOCATION]', '[TRANSFER_CONFIG]', '[RUN]')
 
-        paged_list_response = client.list_transfer_logs(parent, message_types)
+        paged_list_response = client.list_transfer_logs(parent)
         with pytest.raises(CustomException):
             list(paged_list_response)
 
@@ -639,16 +630,17 @@ class TestDataTransferServiceClient(object):
         # Setup Expected Response
         has_valid_creds = False
         expected_response = {'has_valid_creds': has_valid_creds}
-        expected_response = datatransfer_pb2.CheckValidCredsResponse(
-            **expected_response)
+        expected_response = datatransfer_pb2.CheckValidCredsResponse(**expected_response)
 
         # Mock the API response
-        channel = ChannelStub(responses=[expected_response])
-        client = datatransfer_v1.DataTransferServiceClient(channel=channel)
+        channel = ChannelStub(responses = [expected_response])
+        patch = mock.patch('google.api_core.grpc_helpers.create_channel')
+        with patch as create_channel:
+            create_channel.return_value = channel
+            client = datatransfer_v1.DataTransferServiceClient()
 
         # Setup Request
-        name = client.data_source_path('[PROJECT]', '[LOCATION]',
-                                       '[DATA_SOURCE]')
+        name = client.data_source_path('[PROJECT]', '[LOCATION]', '[DATA_SOURCE]')
 
         response = client.check_valid_creds(name)
         assert expected_response == response
@@ -660,19 +652,24 @@ class TestDataTransferServiceClient(object):
 
     def test_check_valid_creds_exception(self):
         # Mock the API response
-        channel = ChannelStub(responses=[CustomException()])
-        client = datatransfer_v1.DataTransferServiceClient(channel=channel)
+        channel = ChannelStub(responses = [CustomException()])
+        patch = mock.patch('google.api_core.grpc_helpers.create_channel')
+        with patch as create_channel:
+            create_channel.return_value = channel
+            client = datatransfer_v1.DataTransferServiceClient()
 
         # Setup request
-        name = client.data_source_path('[PROJECT]', '[LOCATION]',
-                                       '[DATA_SOURCE]')
+        name = client.data_source_path('[PROJECT]', '[LOCATION]', '[DATA_SOURCE]')
 
         with pytest.raises(CustomException):
             client.check_valid_creds(name)
 
     def test_enable_data_transfer_service(self):
         channel = ChannelStub()
-        client = datatransfer_v1.DataTransferServiceClient(channel=channel)
+        patch = mock.patch('google.api_core.grpc_helpers.create_channel')
+        with patch as create_channel:
+            create_channel.return_value = channel
+            client = datatransfer_v1.DataTransferServiceClient()
 
         # Setup Request
         name = client.location_path('[PROJECT]', '[LOCATION]')
@@ -680,15 +677,17 @@ class TestDataTransferServiceClient(object):
         client.enable_data_transfer_service(name)
 
         assert len(channel.requests) == 1
-        expected_request = datatransfer_pb2.EnableDataTransferServiceRequest(
-            name=name)
+        expected_request = datatransfer_pb2.EnableDataTransferServiceRequest(name=name)
         actual_request = channel.requests[0][1]
         assert expected_request == actual_request
 
     def test_enable_data_transfer_service_exception(self):
         # Mock the API response
-        channel = ChannelStub(responses=[CustomException()])
-        client = datatransfer_v1.DataTransferServiceClient(channel=channel)
+        channel = ChannelStub(responses = [CustomException()])
+        patch = mock.patch('google.api_core.grpc_helpers.create_channel')
+        with patch as create_channel:
+            create_channel.return_value = channel
+            client = datatransfer_v1.DataTransferServiceClient()
 
         # Setup request
         name = client.location_path('[PROJECT]', '[LOCATION]')
@@ -701,12 +700,14 @@ class TestDataTransferServiceClient(object):
         enabled = False
         reason = 'reason-934964668'
         expected_response = {'enabled': enabled, 'reason': reason}
-        expected_response = datatransfer_pb2.IsDataTransferServiceEnabledResponse(
-            **expected_response)
+        expected_response = datatransfer_pb2.IsDataTransferServiceEnabledResponse(**expected_response)
 
         # Mock the API response
-        channel = ChannelStub(responses=[expected_response])
-        client = datatransfer_v1.DataTransferServiceClient(channel=channel)
+        channel = ChannelStub(responses = [expected_response])
+        patch = mock.patch('google.api_core.grpc_helpers.create_channel')
+        with patch as create_channel:
+            create_channel.return_value = channel
+            client = datatransfer_v1.DataTransferServiceClient()
 
         # Setup Request
         name = client.location_path('[PROJECT]', '[LOCATION]')
@@ -715,15 +716,17 @@ class TestDataTransferServiceClient(object):
         assert expected_response == response
 
         assert len(channel.requests) == 1
-        expected_request = datatransfer_pb2.IsDataTransferServiceEnabledRequest(
-            name=name)
+        expected_request = datatransfer_pb2.IsDataTransferServiceEnabledRequest(name=name)
         actual_request = channel.requests[0][1]
         assert expected_request == actual_request
 
     def test_is_data_transfer_service_enabled_exception(self):
         # Mock the API response
-        channel = ChannelStub(responses=[CustomException()])
-        client = datatransfer_v1.DataTransferServiceClient(channel=channel)
+        channel = ChannelStub(responses = [CustomException()])
+        patch = mock.patch('google.api_core.grpc_helpers.create_channel')
+        with patch as create_channel:
+            create_channel.return_value = channel
+            client = datatransfer_v1.DataTransferServiceClient()
 
         # Setup request
         name = client.location_path('[PROJECT]', '[LOCATION]')

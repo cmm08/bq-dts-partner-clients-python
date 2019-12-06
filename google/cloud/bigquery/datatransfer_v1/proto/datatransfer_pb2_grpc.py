@@ -8,9 +8,9 @@ from google.protobuf import empty_pb2 as google_dot_protobuf_dot_empty__pb2
 
 class DataTransferServiceStub(object):
   """The Google BigQuery Data Transfer Service API enables BigQuery users to
-  configure the transfer of their data from other Google Products into BigQuery.
-  This service contains methods that are end user exposed. It backs up the
-  frontend.
+  configure the transfer of their data from other Google Products into
+  BigQuery. This service contains methods that are end user exposed. It backs
+  up the frontend.
   """
 
   def __init__(self, channel):
@@ -59,6 +59,11 @@ class DataTransferServiceStub(object):
         request_serializer=google_dot_cloud_dot_bigquery_dot_datatransfer__v1_dot_proto_dot_datatransfer__pb2.ScheduleTransferRunsRequest.SerializeToString,
         response_deserializer=google_dot_cloud_dot_bigquery_dot_datatransfer__v1_dot_proto_dot_datatransfer__pb2.ScheduleTransferRunsResponse.FromString,
         )
+    self.StartManualTransferRuns = channel.unary_unary(
+        '/google.cloud.bigquery.datatransfer.v1.DataTransferService/StartManualTransferRuns',
+        request_serializer=google_dot_cloud_dot_bigquery_dot_datatransfer__v1_dot_proto_dot_datatransfer__pb2.StartManualTransferRunsRequest.SerializeToString,
+        response_deserializer=google_dot_cloud_dot_bigquery_dot_datatransfer__v1_dot_proto_dot_datatransfer__pb2.StartManualTransferRunsResponse.FromString,
+        )
     self.GetTransferRun = channel.unary_unary(
         '/google.cloud.bigquery.datatransfer.v1.DataTransferService/GetTransferRun',
         request_serializer=google_dot_cloud_dot_bigquery_dot_datatransfer__v1_dot_proto_dot_datatransfer__pb2.GetTransferRunRequest.SerializeToString,
@@ -98,9 +103,9 @@ class DataTransferServiceStub(object):
 
 class DataTransferServiceServicer(object):
   """The Google BigQuery Data Transfer Service API enables BigQuery users to
-  configure the transfer of their data from other Google Products into BigQuery.
-  This service contains methods that are end user exposed. It backs up the
-  frontend.
+  configure the transfer of their data from other Google Products into
+  BigQuery. This service contains methods that are end user exposed. It backs
+  up the frontend.
   """
 
   def GetDataSource(self, request, context):
@@ -161,6 +166,17 @@ class DataTransferServiceServicer(object):
     For each date - or whatever granularity the data source supports - in the
     range, one transfer run is created.
     Note that runs are created per UTC time in the time range.
+    DEPRECATED: use StartManualTransferRuns instead.
+    """
+    context.set_code(grpc.StatusCode.UNIMPLEMENTED)
+    context.set_details('Method not implemented!')
+    raise NotImplementedError('Method not implemented!')
+
+  def StartManualTransferRuns(self, request, context):
+    """Start manual transfer runs to be executed now with schedule_time equal to
+    current time. The transfer runs can be created for a time range where the
+    run_time is between start_time (inclusive) and end_time (exclusive), or for
+    a specific run_time.
     """
     context.set_code(grpc.StatusCode.UNIMPLEMENTED)
     context.set_details('Method not implemented!')
@@ -265,6 +281,11 @@ def add_DataTransferServiceServicer_to_server(servicer, server):
           servicer.ScheduleTransferRuns,
           request_deserializer=google_dot_cloud_dot_bigquery_dot_datatransfer__v1_dot_proto_dot_datatransfer__pb2.ScheduleTransferRunsRequest.FromString,
           response_serializer=google_dot_cloud_dot_bigquery_dot_datatransfer__v1_dot_proto_dot_datatransfer__pb2.ScheduleTransferRunsResponse.SerializeToString,
+      ),
+      'StartManualTransferRuns': grpc.unary_unary_rpc_method_handler(
+          servicer.StartManualTransferRuns,
+          request_deserializer=google_dot_cloud_dot_bigquery_dot_datatransfer__v1_dot_proto_dot_datatransfer__pb2.StartManualTransferRunsRequest.FromString,
+          response_serializer=google_dot_cloud_dot_bigquery_dot_datatransfer__v1_dot_proto_dot_datatransfer__pb2.StartManualTransferRunsResponse.SerializeToString,
       ),
       'GetTransferRun': grpc.unary_unary_rpc_method_handler(
           servicer.GetTransferRun,

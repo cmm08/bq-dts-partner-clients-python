@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 #
-# Copyright 2018 Google LLC
+# Copyright 2019 Google LLC
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -14,6 +14,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+
 from __future__ import absolute_import
 
 from google.cloud.bigquery.datatransfer_v1 import DataSourceServiceClient
@@ -21,9 +22,10 @@ from google.cloud.bigquery.datatransfer_v1 import DataTransferServiceClient
 from google.cloud.bigquery.datatransfer_v1 import enums
 from google.cloud.bigquery.datatransfer_v1 import types
 
+
 __all__ = (
     'enums',
     'types',
-    'DataTransferServiceClient',
     'DataSourceServiceClient',
+    'DataTransferServiceClient',
 )

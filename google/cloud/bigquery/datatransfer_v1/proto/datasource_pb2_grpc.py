@@ -120,6 +120,8 @@ class DataSourceServiceServicer(object):
     as the API will create a new OAuth client on behalf of the caller. On the
     other hand data_source.scopes usually need to be set when there are OAuth
     scopes that need to be granted by end users.
+    3. We need a longer deadline due to the 60 seconds SLO from Pub/Sub admin
+    Operations. This also applies to update and delete data source definition.
     """
     context.set_code(grpc.StatusCode.UNIMPLEMENTED)
     context.set_details('Method not implemented!')

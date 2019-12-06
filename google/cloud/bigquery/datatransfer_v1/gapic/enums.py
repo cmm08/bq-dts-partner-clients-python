@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 #
-# Copyright 2018 Google LLC
+# Copyright 2019 Google LLC
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -13,6 +13,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+
 """Wrappers for protocol buffer enum types."""
 
 import enum
@@ -20,15 +21,36 @@ import enum
 
 class NullValue(enum.IntEnum):
     """
-    ``NullValue`` is a singleton enumeration to represent the null value for the
-    ``Value`` type union.
+    ``NullValue`` is a singleton enumeration to represent the null value for
+    the ``Value`` type union.
 
-     The JSON representation for ``NullValue`` is JSON ``null``.
+    The JSON representation for ``NullValue`` is JSON ``null``.
 
     Attributes:
       NULL_VALUE (int): Null value.
     """
     NULL_VALUE = 0
+
+
+class TransferState(enum.IntEnum):
+    """
+    Represents data transfer run state.
+
+    Attributes:
+      TRANSFER_STATE_UNSPECIFIED (int): State placeholder.
+      PENDING (int): Data transfer is scheduled and is waiting to be picked up by
+      data transfer backend.
+      RUNNING (int): Data transfer is in progress.
+      SUCCEEDED (int): Data transfer completed successfully.
+      FAILED (int): Data transfer failed.
+      CANCELLED (int): Data transfer is cancelled.
+    """
+    TRANSFER_STATE_UNSPECIFIED = 0
+    PENDING = 2
+    RUNNING = 3
+    SUCCEEDED = 4
+    FAILED = 5
+    CANCELLED = 6
 
 
 class TransferType(enum.IntEnum):
@@ -46,35 +68,14 @@ class TransferType(enum.IntEnum):
     STREAMING = 2
 
 
-class TransferState(enum.IntEnum):
-    """
-    Represents data transfer run state.
-
-    Attributes:
-      TRANSFER_STATE_UNSPECIFIED (int): State placeholder.
-      PENDING (int): Data transfer is scheduled and is waiting to be picked up by
-      data transfer backend.
-      RUNNING (int): Data transfer is in progress.
-      SUCCEEDED (int): Data transfer completed successsfully.
-      FAILED (int): Data transfer failed.
-      CANCELLED (int): Data transfer is cancelled.
-    """
-    TRANSFER_STATE_UNSPECIFIED = 0
-    PENDING = 2
-    RUNNING = 3
-    SUCCEEDED = 4
-    FAILED = 5
-    CANCELLED = 6
-
-
 class WriteDisposition(enum.IntEnum):
     """
-    Options for writing to the table.
-    The WRITE_EMPTY option is intentionally excluded from the enum and is not
-    supported by the data transfer service.
+    Options for writing to the table. The WRITE\_EMPTY option is
+    intentionally excluded from the enum and is not supported by the data
+    transfer service.
 
     Attributes:
-      WRITE_DISPOSITION_UNSPECIFIED (int): The defult writeDispostion
+      WRITE_DISPOSITION_UNSPECIFIED (int): The default writeDispostion
       WRITE_TRUNCATE (int): overwrites the table data.
       WRITE_APPEND (int): the data is appended to the table.
       Note duplication might happen if this mode is used.
@@ -84,23 +85,39 @@ class WriteDisposition(enum.IntEnum):
     WRITE_APPEND = 2
 
 
-class TransferMessage(object):
-    class MessageSeverity(enum.IntEnum):
+class DataSource(object):
+    class AuthorizationType(enum.IntEnum):
         """
-        Represents data transfer user facing message severity.
+        The type of authorization needed for this data source.
 
         Attributes:
-          MESSAGE_SEVERITY_UNSPECIFIED (int): No severity specified.
-          INFO (int): Informational message.
-          WARNING (int): Warning message.
-          ERROR (int): Error message.
-          DEBUG (int): Debug message.
+          AUTHORIZATION_TYPE_UNSPECIFIED (int): Type unspecified.
+          AUTHORIZATION_CODE (int): Use OAuth 2 authorization codes that can be exchanged
+          for a refresh token on the backend.
+          GOOGLE_PLUS_AUTHORIZATION_CODE (int): Return an authorization code for a given Google+ page that can then be
+          exchanged for a refresh token on the backend.
         """
-        MESSAGE_SEVERITY_UNSPECIFIED = 0
-        INFO = 1
-        WARNING = 2
-        ERROR = 3
-        DEBUG = 4
+        AUTHORIZATION_TYPE_UNSPECIFIED = 0
+        AUTHORIZATION_CODE = 1
+        GOOGLE_PLUS_AUTHORIZATION_CODE = 2
+
+
+    class DataRefreshType(enum.IntEnum):
+        """
+        Represents how the data source supports data auto refresh.
+
+        Attributes:
+          DATA_REFRESH_TYPE_UNSPECIFIED (int): The data source won't support data auto refresh, which is default value.
+          SLIDING_WINDOW (int): The data source supports data auto refresh, and runs will be scheduled
+          for the past few days. Does not allow custom values to be set for each
+          transfer config.
+          CUSTOM_SLIDING_WINDOW (int): The data source supports data auto refresh, and runs will be scheduled
+          for the past few days. Allows custom values to be set for each transfer
+          config.
+        """
+        DATA_REFRESH_TYPE_UNSPECIFIED = 0
+        SLIDING_WINDOW = 1
+        CUSTOM_SLIDING_WINDOW = 2
 
 
 class DataSourceParameter(object):
@@ -127,54 +144,21 @@ class DataSourceParameter(object):
         PLUS_PAGE = 6
 
 
-class DataSource(object):
-    class AuthorizationType(enum.IntEnum):
-        """
-        The type of authorization needed for this data source.
-
-        Attributes:
-          AUTHORIZATION_TYPE_UNSPECIFIED (int): Type unspecified.
-          AUTHORIZATION_CODE (int): Use OAuth 2 authorization codes that can be exchanged
-          for a refresh token on the backend.
-          GOOGLE_PLUS_AUTHORIZATION_CODE (int): Return an authorization code for a given Google+ page that can then be
-          exchanged for a refresh token on the backend.
-        """
-        AUTHORIZATION_TYPE_UNSPECIFIED = 0
-        AUTHORIZATION_CODE = 1
-        GOOGLE_PLUS_AUTHORIZATION_CODE = 2
-
-    class DataRefreshType(enum.IntEnum):
-        """
-        Represents how the data source supports data auto refresh.
-
-        Attributes:
-          DATA_REFRESH_TYPE_UNSPECIFIED (int): The data source won't support data auto refresh, which is default value.
-          SLIDING_WINDOW (int): The data source supports data auto refresh, and runs will be scheduled
-          for the past few days. Does not allow custom values to be set for each
-          transfer config.
-          CUSTOM_SLIDING_WINDOW (int): The data source supports data auto refresh, and runs will be scheduled
-          for the past few days. Allows custom values to be set for each transfer
-          config.
-        """
-        DATA_REFRESH_TYPE_UNSPECIFIED = 0
-        SLIDING_WINDOW = 1
-        CUSTOM_SLIDING_WINDOW = 2
-
-
-class ListTransferRunsRequest(object):
-    class RunAttempt(enum.IntEnum):
-        """
-        Represents which runs should be pulled.
-
-        Attributes:
-          RUN_ATTEMPT_UNSPECIFIED (int): All runs should be returned.
-          LATEST (int): Only latest run per day should be returned.
-        """
-        RUN_ATTEMPT_UNSPECIFIED = 0
-        LATEST = 1
-
-
 class ImportedDataInfo(object):
+    class Encoding(enum.IntEnum):
+        """
+        Encoding of input data in CSV/JSON format.
+
+        Attributes:
+          ENCODING_UNSPECIFIED (int): Default encoding (UTF8).
+          ISO_8859_1 (int): ISO\_8859\_1 encoding.
+          UTF8 (int): UTF8 encoding.
+        """
+        ENCODING_UNSPECIFIED = 0
+        ISO_8859_1 = 1
+        UTF8 = 2
+
+
     class Format(enum.IntEnum):
         """
         Data format.
@@ -201,18 +185,6 @@ class ImportedDataInfo(object):
         PARQUET = 7
         ORC = 8
 
-    class Encoding(enum.IntEnum):
-        """
-        Encoding of input data in CSV/JSON format.
-
-        Attributes:
-          ENCODING_UNSPECIFIED (int): Default encoding (UTF8).
-          ISO_8859_1 (int): ISO_8859_1 encoding.
-          UTF8 (int): UTF8 encoding.
-        """
-        ENCODING_UNSPECIFIED = 0
-        ISO_8859_1 = 1
-        UTF8 = 2
 
     class FieldSchema(object):
         class Type(enum.IntEnum):
@@ -234,7 +206,7 @@ class ImportedDataInfo(object):
               DATETIME (int): Combination of civil date and civil time.
               NUMERIC (int): Numeric type with 38 decimal digits of precision and 9 decimal digits
               of scale.
-              GEOGRAPHY (int): Geography object (go/googlesql_geography).
+              GEOGRAPHY (int): Geography object (go/googlesql\_geography).
             """
             TYPE_UNSPECIFIED = 0
             STRING = 1
@@ -249,3 +221,36 @@ class ImportedDataInfo(object):
             DATETIME = 10
             NUMERIC = 11
             GEOGRAPHY = 12
+
+
+class ListTransferRunsRequest(object):
+    class RunAttempt(enum.IntEnum):
+        """
+        Represents which runs should be pulled.
+
+        Attributes:
+          RUN_ATTEMPT_UNSPECIFIED (int): All runs should be returned.
+          LATEST (int): Only latest run per day should be returned.
+        """
+        RUN_ATTEMPT_UNSPECIFIED = 0
+        LATEST = 1
+
+
+class TransferMessage(object):
+    class MessageSeverity(enum.IntEnum):
+        """
+        Represents data transfer user facing message severity.
+
+        Attributes:
+          MESSAGE_SEVERITY_UNSPECIFIED (int): No severity specified.
+          INFO (int): Informational message.
+          WARNING (int): Warning message.
+          ERROR (int): Error message.
+          DEBUG (int): Debug message.
+        """
+        MESSAGE_SEVERITY_UNSPECIFIED = 0
+        INFO = 1
+        WARNING = 2
+        ERROR = 3
+        DEBUG = 4
+    

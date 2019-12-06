@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 #
-# Copyright 2018 Google LLC
+# Copyright 2019 Google LLC
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -19,14 +19,19 @@ import os
 
 import setuptools
 
+
+
 name = 'google-cloud-bigquerydatatransfer'
 description = 'BigQuery Data Transfer API API client library'
 version = '0.1.0'
-release_status = '3 - Alpha'
+release_status = 'Development Status :: 3 - Alpha'
 dependencies = [
-    'google-api-core[grpc] >= 1.1.0, < 2.0.0dev',
-    'enum34; python_version < "3.4"',
+  'google-api-core[grpc] >= 1.14.0, < 2.0.0dev',
+
+  'enum34; python_version < "3.4"',
 ]
+
+
 
 package_root = os.path.abspath(os.path.dirname(__file__))
 
@@ -36,12 +41,12 @@ with io.open(readme_filename, encoding='utf-8') as readme_file:
 
 packages = [
     package for package in setuptools.find_packages()
-    if package.startswith('google')
-]
+    if package.startswith('google')]
 
 namespaces = ['google']
 if 'google.cloud' in packages:
     namespaces.append('google.cloud')
+
 
 setuptools.setup(
     name=name,
@@ -51,7 +56,7 @@ setuptools.setup(
     author='Google LLC',
     author_email='googleapis-packages@google.com',
     license='Apache 2.0',
-    url='https://github.com/GoogleCloudPlatform/google-cloud-python',
+    url='https://github.com/googleapis/google-cloud-python',
     classifiers=[
         release_status,
         'Intended Audience :: Developers',
